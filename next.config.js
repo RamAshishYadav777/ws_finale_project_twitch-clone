@@ -13,7 +13,6 @@ const nextConfig = {
   output: "standalone",
 
   experimental: {
-    outputFileTracing: false,
   },
 };
 

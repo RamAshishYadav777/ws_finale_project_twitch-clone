@@ -4,17 +4,18 @@ import { getSelfByUsername } from "@/lib/auth-service";
 import { getStreams } from "@/lib/feed-service";
 
 interface CreatorPageProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
 export default async function CreatorPage({ params }: CreatorPageProps) {
+  const { username } = await params;
   const externalUser = await currentUser();
 
   if (!externalUser) redirect("/sign-in");
 
-  const user = await getSelfByUsername(params.username);
+  const user = await getSelfByUsername(username);
 
   if (!user || user.externalUserId !== externalUser.id || !user.stream) {
     redirect("/");

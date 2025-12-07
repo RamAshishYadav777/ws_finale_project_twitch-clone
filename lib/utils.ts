@@ -19,3 +19,6 @@ export function stringToColor(str: string) {
 
   return color;
 }
+
+
+// directUrl = env("DIRECT_URL");

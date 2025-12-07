@@ -35,7 +35,7 @@ export function Video({
   } else if (!participant || tracks.length === 0) {
     content = <LoadingVideo label={connectionState} />;
   } else {
-    content = <LiveVideo participant={participant} />;
+    content = <LiveVideo key={participant.identity} participant={participant} />;
   }
 
   return <div className="aspect-video border-b group relative">{content}</div>;

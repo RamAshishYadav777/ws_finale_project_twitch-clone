@@ -31,6 +31,11 @@ const ingressClient = new IngressClient(
 export const resetIngresses = async (hostId: string) => {
   const ingresses = await ingressClient.listIngress({ roomName: hostId });
 
+  const rooms = await roomService.listRooms([hostId]);
+  for (const room of rooms) {
+    await roomService.deleteRoom(room.name);
+  }
+
   for (const ingress of ingresses) {
     if (ingress.ingressId) {
       await ingressClient.deleteIngress(ingress.ingressId);

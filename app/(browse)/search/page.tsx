@@ -3,19 +3,20 @@ import { redirect } from "next/navigation";
 
 import { Results, ResultsSkeleton } from "./_components/results";
 
-export default function SearchPage({
+export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     term?: string;
-  };
+  }>;
 }) {
-  if (!searchParams.term) redirect("/");
+  const { term } = await searchParams;
+  if (!term) redirect("/");
 
   return (
     <div className="h-full p-8 max-w-screen-2xl mx-auto">
       <Suspense fallback={<ResultsSkeleton />}>
-        <Results term={searchParams.term} />
+        <Results term={term} />
       </Suspense>
     </div>
   );

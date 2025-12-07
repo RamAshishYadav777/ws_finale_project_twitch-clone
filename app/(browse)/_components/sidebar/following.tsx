@@ -18,7 +18,7 @@ export function Following({
 }) {
   const { collapsed } = useSidebar((state) => state);
 
-  if (!data.length) return null;
+  // if (!data.length) return null;
 
   return (
     <div>

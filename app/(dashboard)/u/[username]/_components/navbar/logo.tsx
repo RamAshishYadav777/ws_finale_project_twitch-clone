@@ -1,13 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Poppins } from "next/font/google";
+
 
 import { cn } from "@/lib/utils";
 
-const font = Poppins({
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
-});
+
 
 export function Logo() {
   return (
@@ -16,7 +13,7 @@ export function Logo() {
         <div className="bg-black rounded-full p-1 mr-12 shrink-0 lg:mr-0 lg:shrink">
           <Image src="/twitch.gif" alt="Twitch" height="32" width="99" />
         </div>
-        <div className={cn(font.className, "hidden lg:block")}>
+        <div className={cn("hidden lg:block")}>
           <p className="text-lg font-semibold"></p>
           <p className="text-xs text-muted-foreground">Creator Dashboard</p>
         </div>

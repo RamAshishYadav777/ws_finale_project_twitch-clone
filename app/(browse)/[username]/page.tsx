@@ -7,20 +7,22 @@ import { isBlockedByUser } from "@/lib/block-service";
 import { StreamPlayer } from "@/components/stream-player";
 
 interface UserPageProps {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }
 
 export async function generateMetadata({
-  params: { username },
+  params,
 }: UserPageProps) {
+  const { username } = await params;
   return {
     title: username,
   };
 }
 
 export default async function UserPage({
-  params: { username },
+  params,
 }: UserPageProps) {
+  const { username } = await params;
   const user = await getUserByUsername(username);
 
   if (!user || !user.stream) notFound();

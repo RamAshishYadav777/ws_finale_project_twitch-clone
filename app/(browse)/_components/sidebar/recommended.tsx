@@ -16,7 +16,7 @@ interface RecommendedUser extends User {
 export function Recommended({ data }: { data: RecommendedUser[] }) {
   const { collapsed } = useSidebar((state) => state);
 
-  const showLabel = !collapsed && data.length > 0;
+  const showLabel = !collapsed;
 
   return (
     <div>
@@ -33,7 +33,7 @@ export function Recommended({ data }: { data: RecommendedUser[] }) {
             imageUrl={user.imageUrl}
             username={user.username}
 
-            
+
             isLive={user.stream?.isLive ?? false}
           />
         ))}

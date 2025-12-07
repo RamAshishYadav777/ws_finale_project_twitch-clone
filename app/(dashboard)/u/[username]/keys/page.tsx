@@ -9,6 +9,9 @@ import { ConnectModal } from "./_components/connect-modal";
 
 export default async function KeysPage() {
   const self = await getSelf();
+  if (!self) {
+    return <div className="p-6">Not authenticated</div>;
+  }
   const stream = await getStreamByUserId(self.id);
 
   if (!stream) {

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getSelf } from "@/lib/auth-service";
 
-export const getFollwedUser = async () => {
+export const getFollowedUsers = async () => {
   try {
     const self = await getSelf();
 

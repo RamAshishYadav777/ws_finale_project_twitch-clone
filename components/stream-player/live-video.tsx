@@ -49,15 +49,24 @@ export function LiveVideo({ participant }: { participant: Participant }) {
     setIsFullscreen(isCurrentlyFullscreen);
   };
 
-  useEventListener("fullscreenchange", handleFullscreenChange, wrapperRef);
+  useEventListener("fullscreenchange", handleFullscreenChange, wrapperRef as any);
 
-  useTracks([Track.Source.Camera, Track.Source.Microphone])
-    .filter((track) => track.participant.identity === participant.identity)
-    .forEach((track) => {
+  const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone])
+    .filter((track) => track.participant.identity === participant.identity);
+
+  useEffect(() => {
+    console.log("Tracks found:", tracks.length);
+    tracks.forEach((track) => {
       if (videoRef.current) {
-        track.publication.track?.attach(videoRef.current);
+        if (track.publication.track) {
+          console.log("Attaching track:", track.publication.track.sid);
+          track.publication.track.attach(videoRef.current);
+        } else {
+          console.log("Track publication not ready for:", track.source);
+        }
       }
     });
+  }, [tracks]);
 
   return (
     <div ref={wrapperRef} className="relative h-full flex">
