@@ -39,10 +39,12 @@ export function StreamPlayer({
   user,
   stream,
   isFollowing,
+  totalDonations,
 }: {
   user: CustomUser;
   stream: CustomStream;
   isFollowing: boolean;
+  totalDonations: number;
 }) {
   const { identity, name, token } = useViewerToken(user.id);
   const { collapsed } = useChatSidebar((state) => state);
@@ -61,6 +63,9 @@ export function StreamPlayer({
       <LiveKitRoom
         token={token}
         serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_WS_URL}
+        connect={true}
+        video={false}
+        audio={false}
         className={cn(
           "grid grid-cols-1 lg:gap-y-0 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 h-full",
           collapsed && "lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2"
@@ -76,6 +81,7 @@ export function StreamPlayer({
             isFollowing={isFollowing}
             name={stream.name}
             viewerIdentity={identity}
+            thumbnailUrl={stream.thumbnailUrl}
           />
           <InfoCard
             hostIdentity={user.id}
@@ -100,6 +106,7 @@ export function StreamPlayer({
             isChatEnabled={stream.isChatEnabled}
             isChatDelayed={stream.isChatDelayed}
             isChatFollowersOnly={stream.isChatFollowersOnly}
+            totalDonations={totalDonations}
           />
         </div>
       </LiveKitRoom>

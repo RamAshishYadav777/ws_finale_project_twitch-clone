@@ -20,6 +20,7 @@ export function Header({
   isFollowing,
   name,
   viewerIdentity,
+  thumbnailUrl,
 }: {
   imageUrl: string;
   hostName: string;
@@ -27,6 +28,7 @@ export function Header({
   viewerIdentity: string;
   isFollowing: boolean;
   name: string;
+  thumbnailUrl: string | null;
 }) {
   const participants = useParticipants();
   const participant = useRemoteParticipant(hostIdentity);
@@ -36,6 +38,8 @@ export function Header({
 
   const hostAsViewer = `host-${hostIdentity}`;
   const isHost = hostAsViewer === viewerIdentity;
+
+  console.log("DEBUG HEADER:", { hostIdentity, viewerIdentity, isHost, hostAsViewer });
 
   return (
     <div className="flex flex-col lg:flex-row gap-y-4 lg:gap-y-0 items-start justify-between px-4">
@@ -70,8 +74,11 @@ export function Header({
       </div>
       <Actions
         hostIdentity={hostIdentity}
+        hostName={hostName}
         isFollowing={isFollowing}
         isHost={isHost}
+        streamName={name}
+        thumbnailUrl={thumbnailUrl}
       />
     </div>
   );

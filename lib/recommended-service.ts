@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/db";
 import { getSelf } from "@/lib/auth-service";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const getRecommended = async () => {
+  noStore();
   let userId: string | null = null;
 
   try {

@@ -8,17 +8,25 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DonationButton } from "@/components/donation-button";
 import { cn } from "@/lib/utils";
 import { onFollow, onUnfollow } from "@/actions/follow";
+import { EditStreamModal } from "./edit-stream-modal";
 
 export function Actions({
   hostIdentity,
+  hostName,
   isFollowing,
   isHost,
+  streamName,
+  thumbnailUrl,
 }: {
   hostIdentity: string;
+  hostName: string;
   isFollowing: boolean;
   isHost: boolean;
+  streamName?: string;
+  thumbnailUrl?: string | null;
 }) {
   const { userId } = useAuth();
   const router = useRouter();
@@ -60,18 +68,29 @@ export function Actions({
   };
 
   return (
-    <Button
-      disabled={isPending || isHost}
-      onClick={toggleFollow}
-      variant="primary"
-      size="sm"
-      className="w-full lg:w-auto"
-    >
-      <Heart
-        className={cn("h-4 w-4 mr-2", isFollowing ? "fill-white" : "fill-none")}
-      />
-      {isFollowing ? "Unfollow" : "Follow"}
-    </Button>
+    <div className="flex gap-2 items-center">
+      {isHost && (
+        <EditStreamModal
+          initialName={streamName || hostName}
+          initialThumbnailUrl={thumbnailUrl || null}
+        />
+      )}
+      <Button
+        disabled={isPending || isHost}
+        onClick={toggleFollow}
+        variant="primary"
+        size="sm"
+        className="w-full lg:w-auto"
+      >
+        <Heart
+          className={cn("h-4 w-4 mr-2", isFollowing ? "fill-white" : "fill-none")}
+        />
+        {isFollowing ? "Unfollow" : "Follow"}
+      </Button>
+      {!isHost && userId && (
+        <DonationButton streamerId={hostIdentity} streamerName={hostName} />
+      )}
+    </div>
   );
 }
 

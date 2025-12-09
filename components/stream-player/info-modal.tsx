@@ -121,9 +121,25 @@ export function InfoModal({
                     },
                   }}
                   onClientUploadComplete={(res: any) => {
-                    setThumbnailUrl(res?.[0]?.url);
-                    router.refresh();
-                    closeRef?.current?.click();
+                    console.log("✅ Upload complete:", res);
+                    const uploadedUrl = res?.[0]?.url;
+                    if (uploadedUrl) {
+                      setThumbnailUrl(uploadedUrl);
+                      toast.success("Thumbnail uploaded successfully");
+                      // Wait a moment for the server-side onUploadComplete to finish
+                      setTimeout(() => {
+                        closeRef?.current?.click();
+                        // Force a hard refresh to show the new thumbnail
+                        window.location.reload();
+                      }, 1000);
+                    }
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("❌ Upload error:", error);
+                    toast.error(`Upload failed: ${error.message}`);
+                  }}
+                  onUploadBegin={(fileName: string) => {
+                    console.log("📤 Uploading:", fileName);
                   }}
                 />
               </div>

@@ -17,6 +17,11 @@ export const createViewerToken = async (hostId: string) => {
   if (sessionUser) {
     viewerId = sessionUser.id;
     viewerName = sessionUser.username;
+
+    const hostIdentity = `host-${hostId}`;
+    if (hostId === sessionUser.id) {
+      viewerId = hostIdentity;
+    }
   } else {
     viewerId = `guest-${v4()}`;
     viewerName = `guest#${Math.floor(Math.random() * 9999)}`;

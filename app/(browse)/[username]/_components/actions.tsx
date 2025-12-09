@@ -11,11 +11,14 @@ import { onBlock, onUnblock } from "@/actions/block";
 export function Actions({
   isFollowing,
   userId,
+  isBlocked = false,
 }: {
   isFollowing: boolean;
   userId: string;
+  isBlocked?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [localIsBlocked, setLocalIsBlocked] = React.useState(isBlocked);
 
   const handleFollow = () => {
     startTransition(() => {
@@ -33,29 +36,33 @@ export function Actions({
         .then((data) =>
           toast.success(`You have unfollowed ${data.following.username}`)
         )
-        .catch(() => toast.error("Something went wrong, failed to follow"));
+        .catch(() => toast.error("Something went wrong, failed to unfollow"));
     });
   };
 
   const handleBlock = () => {
     startTransition(() => {
       onBlock(userId)
-        .then((data) =>
-          !!data
-            ? toast.success(`You have blocked ${data?.blocked.username}`)
-            : toast.success("Blocked guest")
-        )
-        .catch(() => toast.error("Something went wrong, failed to block"));
+        .then((data) => {
+          setLocalIsBlocked(true);
+          toast.success(
+            data?.blocked?.username
+              ? `Blocked ${data.blocked.username}`
+              : "User blocked"
+          );
+        })
+        .catch((err) => toast.error(err.message || "Failed to block user"));
     });
   };
 
   const handleUnblock = () => {
     startTransition(() => {
       onUnblock(userId)
-        .then((data) =>
-          toast.success(`You have unblocked ${data.blocked.username}`)
-        )
-        .catch(() => toast.error("Something went wrong, failed to unblock"));
+        .then((data) => {
+          setLocalIsBlocked(false);
+          toast.success(`Unblocked ${data.blocked.username}`);
+        })
+        .catch((err) => toast.error(err.message || "Failed to unblock user"));
     });
   };
 
@@ -69,15 +76,19 @@ export function Actions({
 
   return (
     <>
-      <Button variant="primary" disabled={isPending} onClick={onClick}>
+      <Button variant="primary" disabled={isPending || localIsBlocked} onClick={onClick}>
         {isFollowing ? "Unfollow" : "Follow"}
       </Button>
-      <Button onClick={handleBlock} disabled={isPending}>
-        Block
-      </Button>
-      <Button onClick={handleUnblock} disabled={isPending}>
-        UnBlock
-      </Button>
+      {!localIsBlocked ? (
+        <Button onClick={handleBlock} disabled={isPending} variant="destructive">
+          Block
+        </Button>
+      ) : (
+        <Button onClick={handleUnblock} disabled={isPending} variant="outline">
+          Unblock
+        </Button>
+      )}
     </>
   );
 }
+

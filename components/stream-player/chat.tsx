@@ -24,6 +24,7 @@ export function Chat({
   isChatEnabled,
   isChatDelayed,
   isChatFollowersOnly,
+  totalDonations,
 }: {
   hostName: string;
   hostIdentity: string;
@@ -32,6 +33,7 @@ export function Chat({
   isChatEnabled: boolean;
   isChatDelayed: boolean;
   isChatFollowersOnly: boolean;
+  totalDonations: number;
 }) {
   const matches = useMediaQuery("(max-width: 1024px)");
   const { variant, onExpand } = useChatSidebar((state) => state);
@@ -89,6 +91,7 @@ export function Chat({
             hostName={hostName}
             viewerName={viewerName}
             isHidden={isHidden}
+            totalDonations={totalDonations}
           />
         </>
       )}

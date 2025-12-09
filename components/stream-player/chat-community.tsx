@@ -14,10 +14,12 @@ export function ChatCommunity({
   hostName,
   viewerName,
   isHidden,
+  totalDonations,
 }: {
   hostName: string;
   viewerName: string;
   isHidden: boolean;
+  totalDonations: number;
 }) {
   const [value, setValue] = useState("");
   const [debouncedValue] = useDebounceValue<string>(value, 500);
@@ -29,15 +31,13 @@ export function ChatCommunity({
   };
 
   const filteredParticipants = useMemo(() => {
-    const deduped = participants.reduce((acc, participant) => {
-      const hostAsViewr = `host-${participant.identity}`;
-      if (!acc.some((p) => p.identity === hostAsViewr)) {
-        acc.push(participant);
-      }
-      return acc;
-    }, [] as (RemoteParticipant | LocalParticipant)[]);
+    // Filter out duplicate participants (e.g. if appear as both local and remote)
+    // and match the search value
+    const uniqueParticipants = Array.from(
+      new Map(participants.map((p) => [p.identity, p])).values()
+    );
 
-    return deduped.filter((participant) =>
+    return uniqueParticipants.filter((participant) =>
       participant.name?.toLowerCase().includes(debouncedValue.toLowerCase())
     );
   }, [debouncedValue, participants]);
@@ -51,13 +51,13 @@ export function ChatCommunity({
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 flex flex-col h-full">
       <Input
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search community"
         className="border-white/10"
       />
-      <ScrollArea className="gap-y-2 mt-4">
+      <ScrollArea className="gap-y-2 mt-4 flex-1">
         <p className="text-center text-sm text-muted-foreground hidden last:block">
           No results
         </p>
@@ -71,6 +71,19 @@ export function ChatCommunity({
           />
         ))}
       </ScrollArea>
+      <div className="mt-4 pt-4 border-t border-white/10">
+        <div className="rounded-lg bg-indigo-600/10 p-4 border border-indigo-600/20">
+          <h3 className="text-sm font-semibold text-indigo-400 mb-1">
+            Total Community Rewards
+          </h3>
+          <p className="text-2xl font-bold text-white">
+            ₹{totalDonations.toLocaleString("en-IN")}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Donated by this amazing community!
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -9,19 +9,24 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  username       String   @unique
-  imageUrl       String
-  externalUserId String   @unique
-  bio            String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  blockedBy      Block[]  @relation("BlockedBy")
-  blocking       Block[]  @relation("Blocking")
-  following      Follow[] @relation("Following")
-  followedBy     Follow[] @relation("FollowedBy")
-  stream         Stream?
+  id                  String         @id @default(uuid())
+  username            String         @unique
+  imageUrl            String
+  externalUserId      String         @unique
+  bio                 String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  blockedBy           Block[]        @relation("BlockedBy")
+  blocking            Block[]        @relation("Blocking")
+  following           Follow[]       @relation("Following")
+  followedBy          Follow[]       @relation("FollowedBy")
+  stream              Stream?
+  receivedDonations   Donation[]     @relation("ReceivedDonations")
+  sentDonations       Donation[]     @relation("SentDonations")
+  subscriptions       Subscription[] @relation("UserSubscriptions")
+  subscribers         Subscription[] @relation("StreamerSubscriptions")
 }
+
 
 model Stream {
   id                  String   @id @default(uuid())
@@ -68,4 +73,48 @@ model Block {
   @@unique([blockerId, blockedId])
   @@index([blockerId])
   @@index([blockedId])
+}
+
+model Donation {
+  id                String   @id @default(uuid())
+  amount            Int      // Amount in paise (₹1 = 100 paise)
+  currency          String   @default("INR")
+  status            String   @default("pending") // pending, success, failed
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?  @unique
+  streamerId        String
+  donorId           String?
+  donorName         String?
+  message           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  streamer          User     @relation("ReceivedDonations", fields: [streamerId], references: [id], onDelete: Cascade)
+  donor             User?    @relation("SentDonations", fields: [donorId], references: [id], onDelete: SetNull)
+  
+  @@index([streamerId])
+  @@index([donorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                String   @id @default(uuid())
+  userId            String
+  streamerId        String
+  planId            String   // monthly, yearly, etc.
+  amount            Int      // Amount in paise
+  status            String   @default("active") // active, cancelled, expired
+  razorpaySubId     String   @unique
+  currentPeriodEnd  DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  streamer          User     @relation("StreamerSubscriptions", fields: [streamerId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, streamerId])
+  @@index([userId])
+  @@index([streamerId])
+  @@index([status])
 }

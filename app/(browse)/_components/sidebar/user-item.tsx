@@ -21,7 +21,6 @@ export function UserItem({
   isLive?: boolean;
 }) {
   const pathname = usePathname();
-
   const { collapsed } = useSidebar((state) => state);
 
   const href = `/${username}`;
@@ -44,7 +43,12 @@ export function UserItem({
             collapsed && "justify-center"
           )}
         >
-          <UserAvatar imageUrl={imageUrl} username={username} isLive={isLive} />
+          <UserAvatar
+            imageUrl={imageUrl}
+            username={username}
+            isLive={isLive}
+            showBadge
+          />
           {!collapsed && <p className="truncate">{username}</p>}
           {!collapsed && isLive && <LiveBadge className="ml-auto" />}
         </div>

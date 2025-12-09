@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { Results, ResultsSkeleton } from "./_components/results";
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: "TwitchClone",
 };
 
 export default function Home() {

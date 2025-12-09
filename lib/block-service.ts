@@ -1,3 +1,6 @@
+"use server";
+
+import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getSelf } from "@/lib/auth-service";
 
@@ -31,10 +34,13 @@ export const isBlockedByUser = async (id: string) => {
 };
 
 export const blockUser = async (id: string) => {
+  // Prevent caching for real-time block status
+  noStore();
+
   const self = await getSelf();
 
   if (!self) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized - Please sign in");
   }
 
   if (self.id === id) {
@@ -62,6 +68,30 @@ export const blockUser = async (id: string) => {
     throw new Error("User is already blocked");
   }
 
+  // Also check if we're following them and unfollow
+  try {
+    const existingFollow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: self.id,
+          followingId: otherUser.id,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      await prisma.follow.delete({
+        where: {
+          id: existingFollow.id,
+        },
+      });
+      console.log("✅ Unfollowed user before blocking");
+    }
+  } catch (error) {
+    console.warn("⚠️ Could not unfollow user:", error);
+    // Continue with blocking even if unfollow fails
+  }
+
   const block = await prisma.block.create({
     data: {
       blockerId: self.id,
@@ -76,10 +106,13 @@ export const blockUser = async (id: string) => {
 };
 
 export const unblockUser = async (id: string) => {
+  // Prevent caching for real-time block status
+  noStore();
+
   const self = await getSelf();
 
   if (!self) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized - Please sign in");
   }
 
   if (self.id === id) {
@@ -120,10 +153,13 @@ export const unblockUser = async (id: string) => {
 };
 
 export const getBlockedUsers = async () => {
+  // Prevent caching for real-time block list
+  noStore();
+
   const self = await getSelf();
 
   if (!self) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized - Please sign in");
   }
 
   const blockedUsers = await prisma.block.findMany({

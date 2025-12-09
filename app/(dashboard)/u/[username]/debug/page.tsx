@@ -1,6 +1,7 @@
 import React from "react";
 import { getSelf } from "@/lib/auth-service";
 import { getStreamByUserId } from "@/lib/stream-service";
+import { StreamStatus } from "../_components/stream-status";
 
 export default async function DebugPage() {
     const self = await getSelf();
@@ -16,7 +17,10 @@ export default async function DebugPage() {
 
     return (
         <div className="p-6 space-y-4">
-            <h1 className="text-2xl font-bold">Stream Debug Info</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Stream Debug Info</h1>
+                <StreamStatus initialIsLive={stream.isLive} username={self.username} />
+            </div>
 
             <div className="bg-gray-900 p-4 rounded-lg space-y-2 font-mono text-sm">
                 <div>

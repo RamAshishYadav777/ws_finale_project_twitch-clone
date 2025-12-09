@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getSelf } from "@/lib/auth-service";
+import { getStreamerTotalDonations } from "@/lib/donation-service";
 import { Navbar } from "./_components/navbar";
 import { Sidebar } from "./_components/sidebar";
 import { Container } from "./_components/container";
@@ -25,11 +26,13 @@ export default async function CreatorLayout({
       redirect("/");
     }
 
+    const totalDonations = await getStreamerTotalDonations(self.id);
+
     return (
       <>
         <Navbar />
         <div className="flex h-full pt-20">
-          <Sidebar />
+          <Sidebar totalDonations={totalDonations} />
           <Container>{children}</Container>
         </div>
       </>

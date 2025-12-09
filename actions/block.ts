@@ -6,51 +6,95 @@ import { RoomServiceClient } from "livekit-server-sdk";
 import { blockUser, unblockUser } from "@/lib/block-service";
 import { getSelf } from "@/lib/auth-service";
 
-const roomService = new RoomServiceClient(
-  process.env.LIVEKIT_API_URL!,
-  process.env.LIVEKIT_API_KEY!,
-  process.env.LIVEKIT_API_SECRET!
-);
+// Initialize RoomServiceClient with proper error handling
+const getRoomService = () => {
+  const apiUrl = process.env.LIVEKIT_API_URL;
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+  if (!apiUrl || !apiKey || !apiSecret) {
+    console.error("❌ LiveKit credentials missing:", {
+      hasUrl: !!apiUrl,
+      hasKey: !!apiKey,
+      hasSecret: !!apiSecret,
+    });
+    throw new Error("LiveKit configuration is incomplete");
+  }
+
+  return new RoomServiceClient(apiUrl, apiKey, apiSecret);
+};
 
 export const onBlock = async (id: string) => {
-  const self = await getSelf();
-
-  if (!self?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  let blockedUser = null;
-
   try {
-    blockedUser = await blockUser(id);
-  } catch (err) {
-    // user may be guest or already blocked
-    console.warn("Block failed:", err);
+    const self = await getSelf();
+
+    if (!self?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    console.log("🚫 Attempting to block user:", id);
+
+    let blockedUser = null;
+
+    // Step 1: Block user in database
+    try {
+      blockedUser = await blockUser(id);
+      console.log("✅ User blocked in database:", blockedUser?.blocked?.username || id);
+    } catch (err: any) {
+      console.error("❌ Database block failed:", err.message);
+      // If user is already blocked or is a guest, continue to remove from room
+      if (!err.message?.includes("already blocked")) {
+        throw err;
+      }
+    }
+
+    // Step 2: Remove participant from LiveKit room
+    try {
+      const roomService = getRoomService();
+      // roomName = host.id (self.id), participantIdentity = viewer id
+      await roomService.removeParticipant(self.id, id);
+      console.log("✅ Participant removed from LiveKit room");
+    } catch (err: any) {
+      console.warn("⚠️ LiveKit removeParticipant failed:", err.message);
+      // User may not be connected to the room - this is not a critical error
+    }
+
+    // Step 3: Revalidate all relevant paths
+    revalidatePath(`/u/${self.username}/community`);
+    revalidatePath(`/${self.username}`);
+    revalidatePath("/");
+
+    console.log("✅ Block action completed successfully");
+    return blockedUser;
+  } catch (error: any) {
+    console.error("❌ Block action failed:", error.message);
+    throw new Error(error.message || "Failed to block user");
   }
-
-  try {
-    // roomName = host.id, participantIdentity = viewer id
-    await roomService.removeParticipant(self.id, id);
-  } catch (err) {
-    // user may not be connected to the room
-    console.warn("LiveKit removeParticipant failed:", err);
-  }
-
-  revalidatePath(`/u/${self.username}/community`);
-
-  return blockedUser;
 };
 
 export const onUnblock = async (id: string) => {
-  const self = await getSelf();
+  try {
+    const self = await getSelf();
 
-  if (!self?.id) {
-    throw new Error("Unauthorized");
+    if (!self?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    console.log("🔓 Attempting to unblock user:", id);
+
+    const unblockedUser = await unblockUser(id);
+    console.log("✅ User unblocked:", unblockedUser.blocked.username);
+
+    // Revalidate all relevant paths
+    revalidatePath(`/u/${self.username}/community`);
+    revalidatePath(`/${self.username}`);
+    revalidatePath("/");
+
+    console.log("✅ Unblock action completed successfully");
+    return unblockedUser;
+  } catch (error: any) {
+    console.error("❌ Unblock action failed:", error.message);
+    throw new Error(error.message || "Failed to unblock user");
   }
-
-  const unblockedUser = await unblockUser(id);
-
-  revalidatePath(`/u/${self.username}/community`);
-
-  return unblockedUser;
 };
+

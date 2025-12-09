@@ -13,6 +13,20 @@ export async function getSelf() {
     include: { stream: true },
   });
 
+  if (user && !user.stream) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        stream: {
+          create: {
+            name: user.username,
+          },
+        },
+      },
+      include: { stream: true },
+    });
+  }
+
   // ✅ Auto-create user + stream if missing
   if (!user) {
     const username =
@@ -49,7 +63,14 @@ export async function getSelfByUsername(username: string) {
 
   const user = await prisma.user.findUnique({
     where: { username },
-    include: { stream: true },
+    include: {
+      stream: true,
+      _count: {
+        select: {
+          followedBy: true,
+        },
+      },
+    },
   });
 
   if (!user) return null;
